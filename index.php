@@ -27,7 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
         $mail->Port = 587;
 
         $mail->setFrom(getenv('EMAIL_USER'), 'Prems Beauty World');
-        $mail->addAddress('premierelizabe582@gmail.com');
+        $mail->addAddress('premierelizabeth582@gmail.com');
         $mail->addReplyTo($email, $name);
 
         $mail->Subject = 'New Appointment - Lizzy Beauty';
@@ -401,7 +401,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" placeholder="premierelizabe582@gmail.com" required>
+                    <input type="email" name="email" placeholder="premierelizabeth582@gmail.com" required>
                 </div>
                 <div class="form-group">
                     <label>Service</label>
