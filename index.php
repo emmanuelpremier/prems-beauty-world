@@ -1,5 +1,12 @@
 <?php
 ob_start();
+use PHPMailer\PHPMailer\PHPMailer;
+use PHPMailer\PHPMailer\Exception;
+
+require 'PHPMailer/src/Exception.php';
+require 'PHPMailer/src/PHPMailer.php';
+require 'PHPMailer/src/SMTP.php';
+
 $success = isset($_GET['success']) && $_GET['success'] === '1';
 
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
@@ -9,23 +16,33 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
     $service = htmlspecialchars(trim($_POST['service']));
     $message = htmlspecialchars(trim($_POST['message']));
 
-    $to = 'elizabethpremier582@gmail.com';
-    $subject = 'New Appointment Request - Lizzy Beauty';
-    $body = "New Appointment Request\n\n"
-        . "Name: $name\n"
-        . "Phone: $phone\n"
-        . "Email: $email\n"
-        . "Service: $service\n"
-        . "Message: $message\n";
-    $headers = "From: $email\r\n";
-    $headers .= "Reply-To: $email\r\n";
+    $mail = new PHPMailer(true);
+    try {
+        $mail->isSMTP();
+        $mail->Host = 'smtp.gmail.com';
+        $mail->SMTPAuth = true;
+        $mail->Username = getenv('EMAIL_USER');
+        $mail->Password = getenv('EMAIL_PASS');
+        $mail->SMTPSecure = 'tls';
+        $mail->Port = 587;
 
-    @mail($to, $subject, $body, $headers);
+        $mail->setFrom(getenv('EMAIL_USER'), 'Prems Beauty World');
+        $mail->addAddress('premierelizabe582@gmail.com');
+        $mail->addReplyTo($email, $name);
 
-    ob_end_clean();
-    http_response_code(200);
-    echo 'success';
-    exit;
+        $mail->Subject = 'New Appointment - Lizzy Beauty';
+        $mail->Body = "Name: $name\nPhone: $phone\nEmail: $email\nService: $service\nMessage: $message\n";
+
+        $mail->send();
+        ob_end_clean();
+        echo 'success';
+        exit;
+    } catch (Exception $e) {
+        ob_end_clean();
+        http_response_code(500);
+        echo 'Mailer Error: ' . $mail->ErrorInfo;
+        exit;
+    }
 }
 ?>
 <!DOCTYPE html>
@@ -321,7 +338,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
                 <div class="icon">&#9993;</div>
                 <div>
                     <strong>Email</strong>
-                    <a href="mailto:elizabethpremier582@gmail.com">elizabethpremier582@gmail.com</a>
+                    <a href="mailto:premierelizabeth582@gmail.com">premierelizabeth582@gmail.com</a>
                 </div>
             </div>
             <div class="contact-item">
@@ -384,7 +401,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
             <div class="form-row">
                 <div class="form-group">
                     <label>Email</label>
-                    <input type="email" name="email" placeholder="elizabethpremier19@gmail.com" required>
+                    <input type="email" name="email" placeholder="premierelizabe582@gmail.com" required>
                 </div>
                 <div class="form-group">
                     <label>Service</label>
