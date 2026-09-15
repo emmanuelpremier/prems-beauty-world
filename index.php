@@ -23,8 +23,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
         $mail->SMTPAuth = true;
         $mail->Username = getenv('EMAIL_USER');
         $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = 'tls';
-        $mail->Port = 587;
+        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
+        $mail->Port = 465;
+        $mail->Timeout = 20;
 
         $mail->setFrom(getenv('EMAIL_USER'), 'Prems Beauty World');
         $mail->addAddress('premierelizabeth582@gmail.com');
@@ -527,7 +528,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
             btn.disabled = false;
         });
     });
-    
+
     // Book Another button - reset form and show it again
     document.getElementById('bookAnotherBtn').addEventListener('click', function(e) {
         e.preventDefault();
