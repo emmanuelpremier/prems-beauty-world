@@ -1,14 +1,5 @@
 <?php
 ob_start();
-use PHPMailer\PHPMailer\PHPMailer;
-use PHPMailer\PHPMailer\Exception;
-
-require 'PHPMailer/src/Exception.php';
-require 'PHPMailer/src/PHPMailer.php';
-require 'PHPMailer/src/SMTP.php';
-
-$success = isset($_GET['success']) && $_GET['success'] === '1';
-
 if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
     $name = htmlspecialchars(trim($_POST['name']));
     $phone = htmlspecialchars(trim($_POST['phone']));
@@ -16,34 +7,37 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
     $service = htmlspecialchars(trim($_POST['service']));
     $message = htmlspecialchars(trim($_POST['message']));
 
-    $mail = new PHPMailer(true);
-    try {
-        $mail->isSMTP();
-        $mail->Host = 'smtp.gmail.com';
-        $mail->SMTPAuth = true;
-        $mail->Username = getenv('EMAIL_USER');
-        $mail->Password = getenv('EMAIL_PASS');
-        $mail->SMTPSecure = PHPMailer::ENCRYPTION_SMTPS;
-        $mail->Port = 465;
-        $mail->Timeout = 20;
+    $apiKey = getenv('RESEND_API_KEY');
+    $clientEmail = 'premierelizabeth582@gmail.com'; // Client receives here
+    
+    $data = [
+        'from' => 'Lizzy Beauty <onboarding@resend.dev>',
+        'to' => [$clientEmail],
+        'subject' => 'New Booking: ' . $service . ' - ' . $name,
+        'html' => "<h3>New Appointment Request</h3><p><b>Name:</b> $name</p><p><b>Phone:</b> $phone</p><p><b>Email:</b> $email</p><p><b>Service:</b> $service</p><p><b>Message:</b> $message</p>",
+        'reply_to' => $email
+    ];
 
-        $mail->setFrom(getenv('EMAIL_USER'), 'Prems Beauty World');
-        $mail->addAddress('premierelizabeth582@gmail.com');
-        $mail->addReplyTo($email, $name);
+    $ch = curl_init('https://api.resend.com/emails');
+    curl_setopt($ch, CURLOPT_RETURNTRANSFER, true);
+    curl_setopt($ch, CURLOPT_POST, true);
+    curl_setopt($ch, CURLOPT_POSTFIELDS, json_encode($data));
+    curl_setopt($ch, CURLOPT_HTTPHEADER, [
+        'Authorization: Bearer ' . $apiKey,
+        'Content-Type: application/json'
+    ]);
+    $response = curl_exec($ch);
+    $httpCode = curl_getinfo($ch, CURLINFO_HTTP_CODE);
+    curl_close($ch);
 
-        $mail->Subject = 'New Appointment - Lizzy Beauty';
-        $mail->Body = "Name: $name\nPhone: $phone\nEmail: $email\nService: $service\nMessage: $message\n";
-
-        $mail->send();
-        ob_end_clean();
+    ob_end_clean();
+    if ($httpCode == 200 || $httpCode == 201) {
         echo 'success';
-        exit;
-    } catch (Exception $e) {
-        ob_end_clean();
+    } else {
         http_response_code(500);
-        echo 'Mailer Error: ' . $mail->ErrorInfo;
-        exit;
+        echo 'API Error: ' . $response;
     }
+    exit;
 }
 ?>
 <!DOCTYPE html>
