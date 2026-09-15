@@ -498,25 +498,36 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST' && isset($_POST['name'])) {
         el.classList.add('selected');
     }
 
-    // Form validation and submission
+       // Form validation and submission
     document.getElementById('bookingForm').addEventListener('submit', function(e) {
         e.preventDefault();
+        const btn = this.querySelector('.form-submit');
+        btn.textContent = 'Sending...';
+        btn.disabled = true;
+        
         const formData = new FormData(this);
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'index.php');
-        xhr.onload = function() {
-            if (xhr.status === 200) {
-                document.getElementById('bookingForm').style.display = 'none';
-                document.getElementById('formSuccess').classList.add('show');
-            }
-        };
-        xhr.onerror = function() {
+        fetch('index.php', {
+            method: 'POST',
+            body: formData
+        })
+        .then(response => response.text())
+        .then(data => {
+            console.log(data);
             document.getElementById('bookingForm').style.display = 'none';
             document.getElementById('formSuccess').classList.add('show');
-        };
-        xhr.send(formData);
+        })
+        .catch(err => {
+            console.log(err);
+            // Even if email fails, still show success for user
+            document.getElementById('bookingForm').style.display = 'none';
+            document.getElementById('formSuccess').classList.add('show');
+        })
+        .finally(() => {
+            btn.textContent = 'Request My Appointment';
+            btn.disabled = false;
+        });
     });
-
+    
     // Book Another button - reset form and show it again
     document.getElementById('bookAnotherBtn').addEventListener('click', function(e) {
         e.preventDefault();
